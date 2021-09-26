@@ -9,7 +9,8 @@ class Solution(object):
 
     def build_next_array(self, needle):
         ret_array = [0, ]
-        for x
+        cnt_index = 1
+        
 
     def standard_kmp(self, haystack, needle):
         return
