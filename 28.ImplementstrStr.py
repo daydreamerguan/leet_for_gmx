@@ -10,6 +10,7 @@ class Solution(object):
     def build_next_array(self, needle):
         ret_array = [0, ]
         cnt_index = 1
+        le
         
 
     def standard_kmp(self, haystack, needle):
