@@ -1,13 +1,16 @@
 class Solution(object):
-    def combinationSum2(self, candidates, target):
+    def combinationSum3(self, k, n):
         """
-        :type candidates: List[int]
-        :type target: int
+        :type k: int
+        :type n: int
         :rtype: List[List[int]]
         """
-        candidates.sort()
+        max_limit = 45
+        if n > 45:
+            return []
+        candidates = [i for i in range(1, 10)]
         dp_list = [[([], -1)], ]
-        for cnt_target in range(1, target + 1):
+        for cnt_target in range(1, n + 1):
             cnt_result_list = []
 
             for index, cnt_cand in enumerate(candidates):
@@ -24,10 +27,16 @@ class Solution(object):
                         continue
                     new_result = list(prev_result[0])
                     new_result.append(cnt_cand)
+
                     cnt_result_list.append((new_result, index))
             dp_list.append(cnt_result_list)
         result = []
         for item in dp_list[-1]:
-            result.append(item[0])
+            if len(item[0]) == k:
+                result.append(item[0])
         return result
-Console
+
+if __name__ == '__main__':
+    print(Solution().combinationSum3(3, 7))
+    print(Solution().combinationSum3(3, 9))
+    print(Solution().combinationSum3(4, 1))
