@@ -1,0 +1,15 @@
+SH H for harmonic, 参考拉普拉斯方程
+https://zh.wikipedia.org/wiki/%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E6%96%B9%E7%A8%8B
+三维情况下
+笛卡尔坐标, 求解 XYZ
+柱坐标, r(半径), 角度 phi(φ), 高度z
+球坐标 径向距离 r，极角 θ（theta）与方位角 φ（phi)
+球谐基, 求解球半径
+球谐系数
+https://cloud.tencent.com/developer/article/2197779 UE 的计算
+UE Engine\Source\Runtime\Core\Private\Math\SHMath.cpp
+float NormalizationConstants[9];
+int32 BasisL[9];
+int32 BasisM[9];
+L, M 伴随勒让德多项式(ALP)则有两个参数, 分别是ALP的"degree/band index"和"order"。伴随勒让德多项式这一族正交多项式是分了很多"层"/"带"的，在每一个band l 里面， m表示元素在当前band的元素下标。
+普通的勒让德多项式是复数，伴随勒让德多项式则是实数。
