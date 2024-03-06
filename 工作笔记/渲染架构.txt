@@ -1,3 +1,4 @@
+ 
 https://blog.csdn.net/leonwei/article/details/79298381
 TBDR 和 TBR 的区别
 在设计了TBR后，移动端gpu接受cpu的绘制指令后的绘制行为其实完全改变掉了。在tbr的架构上，是不能够来一个commandbuffer就执行一个的，那是噩梦，因为任何一个commandbuffer都可能影响到到整个FrameBuffer，如果来一个画一个，那么gpu可能会在每一个drawcall上都来回搬迁所有的Tile。这太慢了！所以TBR一般的实现策略是对于cpu过来的commandbuffer，只对他们做vetex process，然后对vs产生的结果暂时保存，等待非得刷新整个FrameBuffer的时候，才真正的随这批绘制做光栅化，做tile-based-rendering。什么是非得刷新整个FrameBuffer的时候？比如Swap Back and Front Buffer，glflush，glfinish，glreadpixels，glcopytexiamge，glbitframebuffer，queryingocclusion，unbind the framebuffer..总之是所有gpu觉得不得不把这块fb绘制好的时候。
@@ -6,3 +7,27 @@ TBR的管线上在PixelShader之前增多了一个步骤，即vs和gs处理后�
 既然tbr上是等待所有的framedata数据一起绘制pixel的，那么gpu就又多了一个优化的可能，deffered rendering，现有的大部分tbr的显卡都或多或少做了这个优化，例如ios的powervr，它多了一个叫做ISR的硬件，专门对这些framedata做处理，找到这次渲染真正有可能会被写入到Framebuffer上的那些drawcall，而过滤掉大部分的drawcall。
 
 所以其实在power vr上对不透明物体的排序是没有太大意义的，而early-z这种策略也是不存在ios上的。）看，硬件巧妙的利用tbr的framedata队列实现了一种延迟渲染，即尽可能只渲染那些最终影响fb的物体，和软件层面的延迟渲染不同的是，软件层面的延迟渲染是针对一个drawcall的，对于从后到前的不透明物体绘制是每次都会绘制的，而硬件层面的延迟渲染时对一批drawcall的，它会从这批绘制里面找到最终要绘制的物体。所以现在大部分的移动端的gpu可以被称为TBDR架构。
+
+模板缓冲例子
+https://blog.csdn.net/csxiaoshui/article/details/23457273 OPENGL
+https://blog.csdn.net/poem_qianmo/article/details/8632184 DX
+
+projection矩阵推导 https://www.jianshu.com/p/cda012fb96df 包括 reverse-z
+
+GPU流水线优化相关， texture、 控制分支带来的 stall例子 rt rendering 4th Chapter 3 The Graphics Processing Unit 5-6 页。
+
+shader model 特性
+DirectX 10.0 推出了 Shader Model 4.0 ⼏何着⾊器和流式输出(GPU蒙皮？后面应该用cs 了)。 2009 年发布的 DirectX 11 和 Shader Model 5.0 增加了曲⾯细分着⾊器和计算着⾊器（cs）;
+DirectX 12 是对 API 的彻底重构，它可以更好的映射到现代 GPU 架构
+vulkan 2016 spir-v
+OpenGL ES 3.0 支持 multiple rendertarget Mutiple Render Target https://juejin.cn/post/6869202501216763912
+曲⾯细分阶段三个阶段。在 DirectX 、 opengl中，它们分别叫做壳着⾊器（hull shader/tessellation control shader）、曲⾯细分器（tessellator/（tessellation evaluation shader）和域着⾊器（domain shader/primitive generator）
+当⼀次 draw call 命令被提交之后，渲染管线中只有三个地⽅可以在 GPU上创建⼯作：光栅化、曲⾯细分着⾊器和⼏何着⾊器。其中考虑到所需要的资源和内存，⼏何着⾊器的⾏为是最不可预测的，因为它是完全可编程的。
+
+跨三⻆形执⾏的插值操作是由像素着⾊器程序所指定的。 rt rendering 4th Chapter 3 p23
+光栅化阶段⽣成的深度值也可以在像素着⾊器中进⾏修改。模板缓冲（stencil buffer）通常是不可修改的，⽽是会直接将其发送给合并阶段；在 DirectX 11.3中，也允许着⾊器对模板缓冲进⾏修改。 在 Shader Model 4.0中，诸如雾效计算和透明度测试（alpha test）等操作，都从合并阶段转移到了像素着⾊器中进⾏执⾏
+unordered access view -> DX11, SM 5.0
+合并测试 early-z. 像素着⾊器可以修改⽚元的深度值，或者是直接将整个⽚元丢弃；但是如果在像素着⾊器中存在这种类型操作的话，那么通常将⽆法使⽤ early-z
+
+Compute shader 常见应用 粒⼦系统、⽹格处理（例如⾯部动画[134]）、剔除[1883, 1884]、图像过滤[1102, 1710]、改进深度精度[991]、阴影[865]、景深效果
+
